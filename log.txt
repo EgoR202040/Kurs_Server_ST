@@ -1,0 +1,44 @@
+[2025-04-06 18:15:49] listen socket created
+[2025-04-06 18:15:49] bind success
+[2025-04-06 18:16:10] Client socket created
+[2025-04-06 18:16:10] ID from client received
+[2025-04-06 18:16:10] Authentication success
+[2025-04-06 18:16:10] Начало регистрации пользователя
+[2025-04-06 18:16:23] Новый пользователь зарегистрирован,Login:102
+[2025-04-06 18:16:29] Client socket created
+[2025-04-06 18:16:29] ID from client received
+[2025-04-06 18:16:29] Authentication success
+[2025-04-06 18:16:29] Начало получения файла
+[2025-04-06 18:16:33] Файл успешно сохранён:new.txt
+[2025-04-09 14:07:47] listen socket created
+[2025-04-09 14:07:47] bind success
+[2025-04-09 14:08:26] Connection rejected - server busy
+[2025-04-09 14:08:28] Connection rejected - server busy
+[2025-04-09 14:08:35] Client socket created
+[2025-04-09 14:08:35] ID from client received
+[2025-04-09 14:08:35] Invalid ID format received: 
+[2025-04-09 14:08:43] Client socket created
+[2025-04-09 14:08:43] ID from client received
+[2025-04-09 14:08:43] Invalid ID format received: 
+[2025-04-09 14:08:45] [Uncritical]ID receive error
+[2025-04-09 14:08:45] [Uncritical]ID receive error
+[2025-04-09 14:09:36] listen socket created
+[2025-04-09 14:09:36] Socket bind err
+[2025-04-09 14:09:38] listen socket created
+[2025-04-09 14:09:38] Socket bind err
+[2025-04-09 14:09:52] listen socket created
+[2025-04-09 14:09:52] bind success
+[2025-04-09 14:10:13] Client socket created
+[2025-04-09 14:10:13] ID from client received
+[2025-04-09 14:10:13] Authentication success
+[2025-04-09 14:10:13] Начало регистрации пользователя
+[2025-04-09 14:10:23] Новый пользователь зарегистрирован,Login:103
+[2025-04-09 14:46:10] listen socket created
+[2025-04-09 14:46:10] bind success
+[2025-04-09 14:46:37] Connection rejected - server busy
+[2025-04-09 14:46:43] Client socket created
+[2025-04-09 14:46:43] ID from client received
+[2025-04-09 14:46:43] Invalid ID format received: 
+[2025-04-09 14:46:58] [Uncritical]ID receive error
+[2025-04-09 14:47:13] [Uncritical]ID receive error
+[2025-04-09 14:47:14] [Uncritical]ID receive error
