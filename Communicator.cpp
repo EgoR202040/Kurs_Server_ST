@@ -31,9 +31,11 @@
 #include <boost/random/uniform_int_distribution.hpp>
 #include <boost/random/variate_generator.hpp>
 
-#define buff_size 1024
+#define buff_size 4096
 std::unique_ptr<char[]> buff(new char[buff_size]);
 struct Client{
+    int user_ID;
+    std::string user_role;
     std::string client_ID;
     std::string client_type;
 };
@@ -93,21 +95,23 @@ void Communicator::reg_user(int work_sock, const std::string& client_id,
 
 }
 
-bool Communicator::receive_file(int work_sock, const std::string& client_id,Logger* main_log) {
+bool Communicator::receive_file(int work_sock, const std::string& user_id,Logger* main_log) {
+        std::unique_ptr<char[]> buff(new char[buff_size]);
         int rc = recv(work_sock, buff.get(), buff_size, 0);
         if (rc <= 0) {
             throw runtime_error("Failed to receive filename");
         }
         std::string filename(buff.get(), rc);
-        
+        rc = send(work_sock,"OK",2,0);
         rc = recv(work_sock, buff.get(), sizeof(size_t), 0);
         if (rc <= 0) {
             throw runtime_error("Failed to receive file size");
         }
+        rc=send(work_sock,"OK",2,0);
         size_t file_size;
         memcpy(&file_size, buff.get(), sizeof(size_t));
         // Создаем папку для клиента, если ее нет
-        std::string client_dir = "client_" + client_id;
+        std::string client_dir = "client_" + user_id;
         if (mkdir(client_dir.c_str(), 0777) == -1 && errno != EEXIST) {
             throw runtime_error("Failed to create client directory");
         }
@@ -121,16 +125,8 @@ bool Communicator::receive_file(int work_sock, const std::string& client_id,Logg
         }
         
         // Получаем и записываем данные файла
-        size_t received = 0;
-        while (received < file_size) {
-            rc = recv(work_sock, buff.get(), buff_size, 0);
-            if (rc <= 0) {
-                file.close();
-                throw runtime_error("File transfer interrupted");
-            }
-            file.write(buff.get(), rc);
-            received += rc;
-        }
+        rc = recv(work_sock,buff.get(),buff_size,0);
+        file.write(buff.get(),rc);
         main_log ->writelog("Файл успешно сохранён:" +filename);
         file.close();
         return true;
@@ -169,6 +165,7 @@ std::string Communicator::generate_salt()
 void Communicator::handle_client(int work_sock, std::map<int, std::pair<std::string, std::string>>& database, 
                   const std::string& path_basefile, Logger* main_log) {
     try {
+        std::unique_ptr<char[]> buff(new char[buff_size]);
         Client client_data;
         
         // Получение ID клиента
@@ -195,29 +192,28 @@ void Communicator::handle_client(int work_sock, std::map<int, std::pair<std::str
             return;
         }
         
-        std::string id;
+        std::string client_id = message.substr(1,6);
         
-        // Проверка ID в БД
-        for (size_t i = 0; i < message.length(); i++) {
-            if (i != 0) {
-                id += message.at(i);
-            }
-        }
-        
-        // Проверка что ID не пустой и состоит из цифр
-        if (id.empty() || id.find_first_not_of("0123456789") != std::string::npos) {
-            std::string error_msg = "ERROR: Invalid ID format";
-            send(work_sock, error_msg.c_str(), error_msg.size(), 0);
+        // Проверка что ID не пустой
+        if (client_id.empty()) {
             close(work_sock);
-            main_log->writelog("Invalid ID format received: " + id);
+            main_log->writelog("Invalid ID format received: " + client_id);
             return;
         }
-        
+        client_data.client_ID=client_id;
+        client_data.client_type = message[0];
+        if (message.substr(7,rc).empty()){
+            close(work_sock);
+            main_log->writelog("Empty field user_id");
+            return;
+        }
+        client_data.user_ID = stoi(message.substr(7,rc));
+
         bool check_flag = false;
         {
             std::lock_guard<std::mutex> db_lock(database_mutex);
             try {
-                int client_id_num = std::stoi(id);
+                int client_id_num = client_data.user_ID;
                 for (const auto& entry : database) {
                     if (entry.first == client_id_num) { 
                         check_flag = true; 
@@ -236,14 +232,12 @@ void Communicator::handle_client(int work_sock, std::map<int, std::pair<std::str
             rc = send(work_sock, message.c_str(), message.length(), 0);
             {
                 std::lock_guard<std::mutex> log_lock(log_mutex);
-                main_log->writelog("ID не найдено в БД: " + id);
+                main_log->writelog("ID не найдено в БД: " + std::to_string(client_data.user_ID));
             }
             close(work_sock);
             return;
         }
         
-        client_data.client_ID = id;
-        client_data.client_type = message[0];
         std::string salt_s = generate_salt();
         
         rc = send(work_sock, salt_s.c_str(), 16, 0);
@@ -287,12 +281,13 @@ void Communicator::handle_client(int work_sock, std::map<int, std::pair<std::str
             throw runtime_error("[Uncritical]Send OK error");
         }
         
+        
         if (client_data.client_type == "1") {
             {
                 std::lock_guard<std::mutex> log_lock(log_mutex);
                 main_log->writelog("Начало получения файла");
             }
-            receive_file(work_sock, client_data.client_ID, main_log);
+            receive_file(work_sock, std::to_string(client_data.user_ID), main_log);
         } else if (client_data.client_type == "2") {
             {
                 std::lock_guard<std::mutex> log_lock(log_mutex);
