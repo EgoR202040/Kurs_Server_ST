@@ -1,5 +1,4 @@
 #include "Interface.hpp"
-#include "Connector_base.hpp" //Временно
 #include "Communicator.hpp"
 
 int Interface::Analysis(int argc,char** argv) {

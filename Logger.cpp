@@ -65,12 +65,12 @@ string Logger::getCurrentDateTime(const string& format){
     return string(buf);
 }
 
-int Logger::writelog(string message) {
+
+int Logger::writelog(string message,std::string client_ID) {
     lock_guard<mutex> lock(log_mutex);
 
     ofstream filelog(path_to_logfile, ios_base::out | ios_base::app);
     if (!filelog) {
-        // Пытаемся восстановить соединение с файлом
         try {
             set_path(path_to_logfile);
             filelog.open(path_to_logfile, ios_base::out | ios_base::app);
@@ -83,9 +83,13 @@ int Logger::writelog(string message) {
     }
 
     try {
-        filelog << "[" << getCurrentDateTime("now") << "] " 
+        if(client_ID=="None"){
+            filelog << "[" << getCurrentDateTime("now") << "] "
                << message << endl;
-        
+        }else{
+            filelog << "[" << getCurrentDateTime("now") << "] " <<"["<<client_ID <<"]"
+               << message << endl;
+        }
         // Проверяем, что запись прошла успешно
         if (filelog.fail()) {
             throw runtime_error("Write operation failed");
@@ -97,13 +101,4 @@ int Logger::writelog(string message) {
     }
 
     return 0;
-}
-
-int Logger::writelog(string level,string message) {
-    return writelog("[" + level + "] " + message);
-}
-
-// Перегрузка для удобства
-int Logger::operator()(const string& message) {
-    return writelog(message);
 }

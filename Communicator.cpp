@@ -39,7 +39,6 @@ struct Client{
     std::string client_ID;
     std::string client_type;
 };
-
 std::atomic<int> active_clients(0);
 const int MAX_CLIENTS = 3;
 std::mutex clients_mutex,database_mutex,log_mutex;
@@ -50,14 +49,17 @@ void Communicator::reg_user(int work_sock, const std::string& client_id,
         std::unique_ptr<char[]> buff(new char[buff_size]);
         // Получаем данные для регистрации (логин:пароль)
         int rc = recv(work_sock, buff.get(), buff_size, 0);
+        std::string message_err;
         if (rc <= 0) {
-        throw std::runtime_error("Failed to receive registration data");
+            message_err="["+client_id+"]"+"Failed to receive registration data";
+            throw std::runtime_error(message_err);
         }
 
         std::string reg_data(buff.get(), rc);
         size_t delimiter_pos = reg_data.find(':');
         if (delimiter_pos == std::string::npos) {
-        throw std::runtime_error("Invalid registration data format");
+            message_err="["+client_id+"]"+"Invalid registration data format";
+            throw std::runtime_error(message_err);
         }
 
         std::string login = reg_data.substr(0, delimiter_pos);
@@ -65,11 +67,11 @@ void Communicator::reg_user(int work_sock, const std::string& client_id,
 
         //Проверка базы на существование такого логина
         for (const auto& entry : database) {
-        if (entry.second.second == login) {
-        std::string response = "User already exists";
-        send(work_sock, response.c_str(), response.length(), 0);
-        return;
-        }
+            if (entry.second.second == login) {
+                std::string response = "Error:User already exists";
+                send(work_sock, response.c_str(), response.length(), 0);
+                return;
+            }
         }
 
         // Генерируем новый ID (просто максимальный существующий + 1) (Для оптимизации сетевого взаимодействия)
@@ -89,23 +91,27 @@ void Communicator::reg_user(int work_sock, const std::string& client_id,
         std::string response = "OK";
         rc = send(work_sock, response.c_str(), response.length(), 0);
         if (rc <= 0) {
-        throw std::runtime_error("Failed to send registration confirmation");
+            message_err="["+client_id+"]"+"Failed to send registration confirmation";
+            throw std::runtime_error(message_err);
         }
-        main_log->writelog(std::string("Новый пользователь зарегистрирован,Login:")+std::to_string(new_id));
+        main_log->writelog(std::string("Новый пользователь зарегистрирован,Login:")+std::to_string(new_id),client_id);
 
 }
 
-bool Communicator::receive_file(int work_sock, const std::string& user_id,Logger* main_log) {
+bool Communicator::receive_file(int work_sock, const std::string& user_id,Logger* main_log,std::string client_id) {
         std::unique_ptr<char[]> buff(new char[buff_size]);
         int rc = recv(work_sock, buff.get(), buff_size, 0);
+        std::string message_err;
         if (rc <= 0) {
-            throw runtime_error("Failed to receive filename");
+            message_err = "["+client_id+"]"+"Failed to receive filename";
+            throw runtime_error(message_err);
         }
         std::string filename(buff.get(), rc);
         rc = send(work_sock,"OK",2,0);
         rc = recv(work_sock, buff.get(), sizeof(size_t), 0);
         if (rc <= 0) {
-            throw runtime_error("Failed to receive file size");
+            message_err = "["+client_id+"]"+"Failed to receive file size";
+            throw runtime_error(message_err);
         }
         rc=send(work_sock,"OK",2,0);
         size_t file_size;
@@ -113,7 +119,8 @@ bool Communicator::receive_file(int work_sock, const std::string& user_id,Logger
         // Создаем папку для клиента, если ее нет
         std::string client_dir = "client_" + user_id;
         if (mkdir(client_dir.c_str(), 0777) == -1 && errno != EEXIST) {
-            throw runtime_error("Failed to create client directory");
+            message_err = "["+client_id+"]"+"Failed to create client directory";
+            throw runtime_error(message_err);
         }
         // Полный путь к файлу
         std::string filepath = client_dir + "/" + filename;
@@ -121,13 +128,14 @@ bool Communicator::receive_file(int work_sock, const std::string& user_id,Logger
         // Открываем файл для записи
         std::ofstream file(filepath, std::ios::binary);
         if (!file.is_open()) {
-            throw runtime_error("Failed to open file for writing");
+            message_err = "["+client_id+"]"+"Failed to open file for writing";
+            throw runtime_error(message_err);
         }
         
         // Получаем и записываем данные файла
         rc = recv(work_sock,buff.get(),buff_size,0);
         file.write(buff.get(),rc);
-        main_log ->writelog("Файл успешно сохранён:" +filename);
+        main_log ->writelog("Файл успешно сохранён:" +filename,client_id);
         file.close();
         return true;
 }
@@ -167,19 +175,14 @@ void Communicator::handle_client(int work_sock, std::map<int, std::pair<std::str
     try {
         std::unique_ptr<char[]> buff(new char[buff_size]);
         Client client_data;
-        
+        Connector_base con;
+        con.connect(path_basefile);
+        database=con.get_data();
         // Получение ID клиента
         int rc = recv(work_sock, buff.get(), buff_size, 0);
         if (rc <= 0) {
             throw runtime_error("[Uncritical]ID receive error");
         }
-        
-        {
-            std::lock_guard<std::mutex> log_lock(log_mutex);
-            main_log->writelog("Client socket created");
-            main_log->writelog("ID from client received");
-        }
-        
         buff[rc] = 0;
         std::string message(buff.get(), rc);
         
@@ -191,9 +194,7 @@ void Communicator::handle_client(int work_sock, std::map<int, std::pair<std::str
             main_log->writelog("Empty ID received from client");
             return;
         }
-        
         std::string client_id = message.substr(1,6);
-        
         // Проверка что ID не пустой
         if (client_id.empty()) {
             close(work_sock);
@@ -201,10 +202,17 @@ void Communicator::handle_client(int work_sock, std::map<int, std::pair<std::str
             return;
         }
         client_data.client_ID=client_id;
+        {
+            std::lock_guard<std::mutex> log_lock(log_mutex);
+            main_log->writelog("Client socket created",client_data.client_ID);
+            main_log->writelog("ID from client received",client_data.client_ID);
+        }
+        
+        
         client_data.client_type = message[0];
         if (message.substr(7,rc).empty()){
             close(work_sock);
-            main_log->writelog("Empty field user_id");
+            main_log->writelog("Empty field user_id received",client_data.client_ID);
             return;
         }
         client_data.user_ID = stoi(message.substr(7,rc));
@@ -222,7 +230,7 @@ void Communicator::handle_client(int work_sock, std::map<int, std::pair<std::str
                 }
             } catch (const std::exception& e) {
                 std::lock_guard<std::mutex> log_lock(log_mutex);
-                main_log->writelog("Error converting ID to number: " + std::string(e.what()));
+                main_log->writelog("Error converting ID to number: " + std::string(e.what()),client_data.client_ID);
                 check_flag = false;
             }
         }
@@ -232,24 +240,26 @@ void Communicator::handle_client(int work_sock, std::map<int, std::pair<std::str
             rc = send(work_sock, message.c_str(), message.length(), 0);
             {
                 std::lock_guard<std::mutex> log_lock(log_mutex);
-                main_log->writelog("ID не найдено в БД: " + std::to_string(client_data.user_ID));
+                main_log->writelog("ID не найдено в БД: " + std::to_string(client_data.user_ID),client_data.client_ID);
             }
             close(work_sock);
             return;
         }
         
         std::string salt_s = generate_salt();
-        
+        std::string message_err;
         rc = send(work_sock, salt_s.c_str(), 16, 0);
         if (rc <= 0) {
             close(work_sock);
-            throw runtime_error("[Uncritical]send SALT error");
+            message_err = "["+client_data.client_ID+"]" +"[Uncritical]send SALT error";
+            throw runtime_error(message_err);
         }
         
         rc = recv(work_sock, buff.get(), 32, 0);
         if (rc <= 0) {
             close(work_sock);
-            throw runtime_error("[Uncritical]HASH received error");
+            message_err = "["+client_data.client_ID+"]" +"[Uncritical]HASH received error";
+            throw runtime_error(message_err);
         }
         
         buff[rc] = 0;
@@ -259,43 +269,60 @@ void Communicator::handle_client(int work_sock, std::map<int, std::pair<std::str
         {
             std::lock_guard<std::mutex> db_lock(database_mutex);
             for (const auto& entry : database) {
-                if (md5(salt_s + entry.second.first) == client_hash) {
-                    check_pass = true;
+                if(entry.first==client_data.user_ID){
+                    if (md5(salt_s + entry.second.first) == client_hash) {
+                        check_pass = true;
+                    }
                 }
             }
         }
         
         if (!check_pass) {
             close(work_sock);
-            throw runtime_error("[Uncritical]Auth error");
+            message_err = "["+client_data.client_ID+"]" +"[Uncritical]Auth error";
+            throw runtime_error(message_err);
         }
         
         {
             std::lock_guard<std::mutex> log_lock(log_mutex);
-            main_log->writelog("Authentication success");
+            main_log->writelog("Authentication success",client_data.client_ID);
         }
-        
+        bool check_role = false;
+        for(auto entry:database){
+            if(entry.first==client_data.user_ID){
+                if(entry.second.second=="root" or entry.second.second == "admin"){
+                    check_role = true;
+                    break;
+                }
+            }
+        }
+        if(!check_role and client_data.client_type=="2"){
+            rc=send(work_sock,"Error: Not enough privileges",28,0);
+            main_log->writelog("Not registration privileges for user with id:"+std::to_string(client_data.user_ID),client_data.client_ID);
+            close(work_sock);
+            return;
+        }
         rc = send(work_sock, "OK", 2, 0);
         if (rc <= 0) {
             close(work_sock);
-            throw runtime_error("[Uncritical]Send OK error");
+            message_err = "["+client_data.client_ID+"]" +"[Uncritical]Send OK error";
+            throw runtime_error(message_err);
         }
         
         
         if (client_data.client_type == "1") {
             {
                 std::lock_guard<std::mutex> log_lock(log_mutex);
-                main_log->writelog("Начало получения файла");
+                main_log->writelog("Начало получения файла",client_data.client_ID);
             }
-            receive_file(work_sock, std::to_string(client_data.user_ID), main_log);
+            receive_file(work_sock, std::to_string(client_data.user_ID), main_log,client_data.client_ID);
         } else if (client_data.client_type == "2") {
             {
                 std::lock_guard<std::mutex> log_lock(log_mutex);
-                main_log->writelog("Начало регистрации пользователя");
+                main_log->writelog("Начало регистрации пользователя",client_data.client_ID);
             }
-            reg_user(work_sock, client_data.client_ID, database, path_basefile, main_log);
-        }
-        
+                reg_user(work_sock, client_data.client_ID, database, path_basefile, main_log);
+            }
     } catch (runtime_error& e) {
         std::lock_guard<std::mutex> log_lock(log_mutex);
         main_log->writelog(e.what());
@@ -346,7 +373,7 @@ int Communicator::connection(int port, std::map<int, std::pair<std::string, std:
                 int work_sock = accept(s, (sockaddr*)(client_addr), &len);
 
                 if (work_sock <= 0) {
-                    throw runtime_error("[Uncritical]Client socket error");
+                    throw runtime_error("[Uncritical]Client socket create error");
                 }
 
                 // Проверяем количество активных клиентов
