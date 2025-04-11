@@ -44,6 +44,16 @@ const int MAX_CLIENTS = 3;
 std::mutex clients_mutex,database_mutex,log_mutex;
 std::atomic<bool> server_running(true);
 
+//************************************
+//			Функция регистрации пользователя
+//          параметры:
+//          int work_sock - Рабочий сокет, необходимый для TCP взаимодействия сервера и клиента
+//          const std::string& client_id - Ссылка на переменную client_id типа std::string, содержащая идентификатор клиентского приложения
+//          std::map<int,std::pair<std::string,std::string>>& database - Ссылка на словарь, содержащий базу данных в виде (user_id:пара(user_pass,user_role))
+//          std::string filename - Имя файла с базой данных (путь)
+//          Logger* main_log - Ссылка на объект класса Logger,необходима для общего лога для всего сервера
+//
+//************************************
 void Communicator::reg_user(int work_sock, const std::string& client_id, 
     std::map<int, std::pair<std::string, std::string>>& database,std::string filename,Logger* main_log) {
         std::unique_ptr<char[]> buff(new char[buff_size]);
@@ -51,7 +61,7 @@ void Communicator::reg_user(int work_sock, const std::string& client_id,
         int rc = recv(work_sock, buff.get(), buff_size, 0);
         std::string message_err;
         if (rc <= 0) {
-            message_err="["+client_id+"]"+"Failed to receive registration data";
+            message_err="["+client_id+"]"+"Failed to receive registration data"; //сообщение сетевой ошибки при получении первичного запроса от клиента
             throw std::runtime_error(message_err);
         }
 
@@ -97,7 +107,15 @@ void Communicator::reg_user(int work_sock, const std::string& client_id,
         main_log->writelog(std::string("Новый пользователь зарегистрирован,Login:")+std::to_string(new_id),client_id);
 
 }
-
+//************************************
+//			Функция получения файла от клиента
+//          параметры:
+//          int work_sock - Рабочий сокет, необходимый для TCP взаимодействия сервера и клиента
+//          const std::string& user_id - Ссылка на переменную user_id типа std::string, содержащая идентификатор пользователя (для создания домашнего каталога)
+//          Logger* main_log - Ссылка на объект класса Logger,необходима для общего лога для всего сервера
+//          std::string client_id - идентификатор клиентского приложения для корректного логирования
+//
+//************************************
 bool Communicator::receive_file(int work_sock, const std::string& user_id,Logger* main_log,std::string client_id) {
         std::unique_ptr<char[]> buff(new char[buff_size]);
         int rc = recv(work_sock, buff.get(), buff_size, 0);
@@ -153,7 +171,7 @@ std::string Communicator::md5(std::string input_str)
     return new_hash;
 }
 //************************************
-//			Генерация SALT
+//			Генерация SALT, используется в аутентификации
 //
 //************************************
 std::string Communicator::generate_salt()
@@ -170,6 +188,10 @@ std::string Communicator::generate_salt()
     }
     return results;
 }
+//************************************
+//			Функция обработки клиента (создана для многопоточной обработки клиентов)
+//
+//************************************
 void Communicator::handle_client(int work_sock, std::map<int, std::pair<std::string, std::string>>& database, 
                   const std::string& path_basefile, Logger* main_log) {
     try {
@@ -331,7 +353,7 @@ void Communicator::handle_client(int work_sock, std::map<int, std::pair<std::str
     close(work_sock);
 }
 //************************************
-//		  Функция соединения
+//		  Функция соединения(основной метод,через который запускается почти вся работа серверного приложения)
 //
 //************************************
 int Communicator::connection(int port, std::map<int, std::pair<std::string, std::string>> database, 
@@ -391,7 +413,7 @@ int Communicator::connection(int port, std::map<int, std::pair<std::string, std:
                 }
 
                 // Создаем новый поток для обработки клиента
-                client_threads.emplace_back([this, work_sock, &database, path_basefile, main_log]() {
+                client_threads.emplace_back([this, work_sock, &database, path_basefile, main_log]() { //Основа многопоточной обработки клиентов
                     handle_client(work_sock, database, path_basefile, main_log);
                     
                     // Уменьшаем счетчик активных клиентов при завершении

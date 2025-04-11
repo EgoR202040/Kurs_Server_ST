@@ -67,7 +67,7 @@ string Logger::getCurrentDateTime(const string& format){
 
 
 int Logger::writelog(string message,std::string client_ID) {
-    lock_guard<mutex> lock(log_mutex);
+    lock_guard<mutex> lock(log_mutex); //Блокировка логирования
 
     ofstream filelog(path_to_logfile, ios_base::out | ios_base::app);
     if (!filelog) {
