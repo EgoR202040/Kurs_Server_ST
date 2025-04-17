@@ -1,38 +1,126 @@
-[2025-04-11 17:10:44] listen socket created
-[2025-04-11 17:10:44] bind success
-[2025-04-11 17:11:02] [000001]Client socket created
-[2025-04-11 17:11:02] [000001]ID from client received
-[2025-04-11 17:11:03] [000001]Authentication success
-[2025-04-11 17:11:03] [000001]Начало регистрации пользователя
-[2025-04-11 17:11:03] [000001]
-[2025-04-11 17:18:46] listen socket created
-[2025-04-11 17:18:46] bind success
-[2025-04-11 17:18:53] [000001]Client socket created
-[2025-04-11 17:18:53] [000001]ID from client received
-[2025-04-11 17:18:55] [000001]Authentication success
-[2025-04-11 17:18:55] [000001]Начало регистрации пользователя
-[2025-04-11 17:19:01] [000001]Новый пользователь зарегистрирован,Login:102
-[2025-04-11 17:20:45] listen socket created
-[2025-04-11 17:20:45] bind success
-[2025-04-11 17:20:52] [000001]Client socket created
-[2025-04-11 17:20:52] [000001]ID from client received
-[2025-04-11 17:20:52] [000001]ID не найдено в БД: 102
-[2025-04-11 17:21:04] [000001]Client socket created
-[2025-04-11 17:21:04] [000001]ID from client received
-[2025-04-11 17:21:19] [000001]Authentication success
-[2025-04-11 17:21:19] [000001]Not registration privileges for user with id:101
-[2025-04-11 17:21:34] [000001]Client socket created
-[2025-04-11 17:21:34] [000001]ID from client received
-[2025-04-11 17:21:35] [000001]Authentication success
-[2025-04-11 17:21:35] [000001]Начало получения файла
-[2025-04-11 17:21:38] [000001]Файл успешно сохранён:new.txt
-[2025-04-11 17:23:10] listen socket created
-[2025-04-11 17:23:10] bind success
-[2025-04-11 17:23:14] [000001]Client socket created
-[2025-04-11 17:23:14] [000001]ID from client received
-[2025-04-11 17:23:15] [000001][Uncritical]Auth error
-[2025-04-11 17:23:53] [Uncritical]ID receive error
-[2025-04-11 17:23:57] [000001]Client socket created
-[2025-04-11 17:23:57] [000001]ID from client received
-[2025-04-11 17:24:02] [000001]Authentication success
-[2025-04-11 17:24:02] [000001]Not registration privileges for user with id:101
+[2025-04-12 14:09:54] listen socket created
+[2025-04-12 14:09:54] bind success
+[2025-04-12 14:10:08] [000001]Client socket created
+[2025-04-12 14:10:08] [000001]ID from client received
+[2025-04-12 14:10:13] [000001][Uncritical]Auth error
+[2025-04-12 14:10:31] [000001]Client socket created
+[2025-04-12 14:10:31] [000001]ID from client received
+[2025-04-12 14:10:32] [000001]Authentication success
+[2025-04-12 14:10:32] [000001]Not registration privileges for user with id:101
+[2025-04-12 14:10:40] [000001]Client socket created
+[2025-04-12 14:10:40] [000001]ID from client received
+[2025-04-12 14:10:42] [000001]Authentication success
+[2025-04-12 14:10:42] [000001]Начало получения файла
+[2025-04-12 14:10:45] [000001]Файл успешно сохранён:new.txt
+[2025-04-12 14:10:55] [000001]Client socket created
+[2025-04-12 14:10:55] [000001]ID from client received
+[2025-04-12 14:10:57] [000001]Authentication success
+[2025-04-12 14:10:57] [000001]Начало получения файла
+[2025-04-12 14:11:00] [000001]Файл успешно сохранён:new.txt
+[2025-04-17 17:01:34] listen socket created
+[2025-04-17 17:01:34] bind success
+[2025-04-17 17:02:51] [000001]Client socket created
+[2025-04-17 17:02:51] [000001]ID from client received
+[2025-04-17 17:02:54] [000001]Authentication success
+[2025-04-17 17:02:54] [000001]Начало получения файла
+[2025-04-17 17:02:59] [000001]Client socket created
+[2025-04-17 17:02:59] [000001]ID from client received
+[2025-04-17 17:03:01] [000001]Authentication success
+[2025-04-17 17:03:01] [000001]Начало регистрации пользователя
+[2025-04-17 17:03:07] [000001]Client socket created
+[2025-04-17 17:03:07] [000001]ID from client received
+[2025-04-17 17:03:33] [000001]Authentication success
+[2025-04-17 17:03:33] [000001]Начало получения файла
+[2025-04-17 17:03:40] [000001]Файл успешно сохранён:new.txt
+[2025-04-17 17:03:49] [000001]Новый пользователь зарегистрирован,Login:102
+[2025-04-17 17:03:55] [000001]Файл успешно сохранён:new.txt
+[2025-04-17 17:04:30] [000001]Client socket created
+[2025-04-17 17:04:30] [000001]ID from client received
+[2025-04-17 17:04:33] [000001]Authentication success
+[2025-04-17 17:04:33] [000001]Начало регистрации пользователя
+[2025-04-17 17:04:50] [000001]Новый пользователь зарегистрирован,Login:103
+[2025-04-17 17:04:54] [000001]Client socket created
+[2025-04-17 17:04:54] [000001]ID from client received
+[2025-04-17 17:04:54] [000001]ID не найдено в БД: 111
+[2025-04-17 17:05:10] [000001]Client socket created
+[2025-04-17 17:05:10] [000001]ID from client received
+[2025-04-17 17:05:10] [000001]ID не найдено в БД: 111
+[2025-04-17 17:05:30] [000001]Client socket created
+[2025-04-17 17:05:30] [000001]ID from client received
+[2025-04-17 17:05:30] [000001]ID не найдено в БД: 110
+[2025-04-17 17:21:14] listen socket created
+[2025-04-17 17:21:14] bind success
+[2025-04-17 17:21:18] [000001]Client socket created
+[2025-04-17 17:21:18] [000001]ID from client received
+[2025-04-17 17:21:20] [000001]Authentication success
+[2025-04-17 17:21:20] [000001]Начало регистрации пользователя
+[2025-04-17 17:21:25] [000001]Новый пользователь зарегистрирован,Login:101
+[2025-04-17 17:23:53] [000001]Client socket created
+[2025-04-17 17:23:53] [000001]ID from client received
+[2025-04-17 17:23:54] [000001]Authentication success
+[2025-04-17 17:23:54] [000001]Not registration privileges for user with id:101
+[2025-04-17 17:23:58] [000001]Client socket created
+[2025-04-17 17:23:58] [000001]ID from client received
+[2025-04-17 17:24:00] [000001]Authentication success
+[2025-04-17 17:24:00] [000001]Начало регистрации пользователя
+[2025-04-17 17:24:08] [000001]Новый пользователь зарегистрирован,Login:102
+[2025-04-17 17:24:46] [000001]Client socket created
+[2025-04-17 17:24:46] [000001]ID from client received
+[2025-04-17 17:24:47] [000001]Authentication success
+[2025-04-17 17:24:47] [000001]Начало регистрации пользователя
+[2025-04-17 17:24:54] [000001]Новый пользователь зарегистрирован,Login:102
+[2025-04-17 17:25:59] listen socket created
+[2025-04-17 17:25:59] bind success
+[2025-04-17 17:26:09] [000001]Client socket created
+[2025-04-17 17:26:09] [000001]ID from client received
+[2025-04-17 17:26:10] [000001]Authentication success
+[2025-04-17 17:26:10] [000001]Начало регистрации пользователя
+[2025-04-17 17:26:15] [000001]Новый пользователь зарегистрирован,Login:103
+[2025-04-17 17:27:02] listen socket created
+[2025-04-17 17:27:02] bind success
+[2025-04-17 17:27:19] [000001]Client socket created
+[2025-04-17 17:27:19] [000001]ID from client received
+[2025-04-17 17:27:20] [000001]Authentication success
+[2025-04-17 17:27:20] [000001]Начало регистрации пользователя
+[2025-04-17 17:27:26] [000001]Новый пользователь зарегистрирован,Login:104
+[2025-04-17 17:28:44] listen socket created
+[2025-04-17 17:28:44] bind success
+[2025-04-17 17:29:07] [000001]Client socket created
+[2025-04-17 17:29:07] [000001]ID from client received
+[2025-04-17 17:29:08] [000001]Authentication success
+[2025-04-17 17:29:08] [000001]Начало регистрации пользователя
+[2025-04-17 17:29:11] [000001]Новый пользователь зарегистрирован,Login:101
+[2025-04-17 17:31:02] listen socket created
+[2025-04-17 17:31:02] bind success
+[2025-04-17 17:31:09] [000001]Client socket created
+[2025-04-17 17:31:09] [000001]ID from client received
+[2025-04-17 17:31:13] [000001]Authentication success
+[2025-04-17 17:31:13] [000001]Not registration privileges for user with id:101
+[2025-04-17 17:31:19] [000001]Client socket created
+[2025-04-17 17:31:19] [000001]ID from client received
+[2025-04-17 17:31:22] [000001]Authentication success
+[2025-04-17 17:31:22] [000001]Начало регистрации пользователя
+[2025-04-17 17:31:28] [000001]Новый пользователь зарегистрирован,Login:102
+[2025-04-17 17:32:15] listen socket created
+[2025-04-17 17:32:15] bind success
+[2025-04-17 17:32:28] [000001]Client socket created
+[2025-04-17 17:32:28] [000001]ID from client received
+[2025-04-17 17:32:29] [000001]Authentication success
+[2025-04-17 17:32:29] [000001]Not registration privileges for user with id:101
+[2025-04-17 17:32:31] [000001]Client socket created
+[2025-04-17 17:32:31] [000001]ID from client received
+[2025-04-17 17:32:32] [000001][Uncritical]Auth error
+[2025-04-17 17:32:35] [000001]Client socket created
+[2025-04-17 17:32:35] [000001]ID from client received
+[2025-04-17 17:32:36] [000001]Authentication success
+[2025-04-17 17:32:36] [000001]Not registration privileges for user with id:102
+[2025-04-17 17:32:42] [000001]Client socket created
+[2025-04-17 17:32:42] [000001]ID from client received
+[2025-04-17 17:32:43] [000001]Authentication success
+[2025-04-17 17:32:43] [000001]Начало получения файла
+[2025-04-17 17:32:44] [000001]Файл успешно сохранён:new.txt
+[2025-04-17 17:32:47] [000001]Client socket created
+[2025-04-17 17:32:47] [000001]ID from client received
+[2025-04-17 17:32:49] [000001]Authentication success
+[2025-04-17 17:32:49] [000001]Начало получения файла
+[2025-04-17 17:32:51] [000001]Файл успешно сохранён:new.txt

@@ -72,23 +72,22 @@ void Communicator::reg_user(int work_sock, const std::string& client_id,
             throw std::runtime_error(message_err);
         }
 
-        std::string login = reg_data.substr(0, delimiter_pos);
+        int login = stoi(reg_data.substr(0, delimiter_pos));
         std::string password = reg_data.substr(delimiter_pos + 1);
-
+        bool exist = false;
         //Проверка базы на существование такого логина
         for (const auto& entry : database) {
-            if (entry.second.second == login) {
-                std::string response = "Error:User already exists";
-                send(work_sock, response.c_str(), response.length(), 0);
-                return;
+            if (entry.first == login) {
+                exist = true;
+                break;
             }
         }
 
         // Генерируем новый ID (просто максимальный существующий + 1) (Для оптимизации сетевого взаимодействия)
-        int new_id = database.empty() ? 1 : database.rbegin()->first + 1;
+        if(exist){login = database.empty() ? 1 : database.rbegin()->first + 1;}
 
         // Добавляем пользователя в базу
-        database[new_id] = std::make_pair(password, "user");
+        database[login] = std::make_pair(password, "user"); //Для всех новых пользователей роль user
 
         //Сохраняем базу в файл
         std::ofstream out;
@@ -96,16 +95,20 @@ void Communicator::reg_user(int work_sock, const std::string& client_id,
         for (const auto& entry : database) {
             out << entry.first << ":" << entry.second.first << ":" << entry.second.second << "\n";
         }
-
-        // Отправляем подтверждение
-        std::string response = "OK";
+        std::string response;
+        if(exist){
+            response = "OK" + to_string(login);
+        }else{
+            response = "OK";
+        }
         rc = send(work_sock, response.c_str(), response.length(), 0);
+        // Отправляем подтверждение
         if (rc <= 0) {
             message_err="["+client_id+"]"+"Failed to send registration confirmation";
+            rc = send(work_sock,message_err.c_str(),message_err.length(),0);
             throw std::runtime_error(message_err);
         }
-        main_log->writelog(std::string("Новый пользователь зарегистрирован,Login:")+std::to_string(new_id),client_id);
-
+        main_log->writelog(std::string("Новый пользователь зарегистрирован,Login:")+std::to_string(login),client_id);
 }
 //************************************
 //			Функция получения файла от клиента
@@ -192,14 +195,13 @@ std::string Communicator::generate_salt()
 //			Функция обработки клиента (создана для многопоточной обработки клиентов)
 //
 //************************************
-void Communicator::handle_client(int work_sock, std::map<int, std::pair<std::string, std::string>>& database, 
-                  const std::string& path_basefile, Logger* main_log) {
+void Communicator::handle_client(int work_sock,const std::string& path_basefile, Logger* main_log) {
     try {
         std::unique_ptr<char[]> buff(new char[buff_size]);
         Client client_data;
         Connector_base con;
         con.connect(path_basefile);
-        database=con.get_data();
+        auto database=con.get_data();
         // Получение ID клиента
         int rc = recv(work_sock, buff.get(), buff_size, 0);
         if (rc <= 0) {
@@ -413,8 +415,8 @@ int Communicator::connection(int port, std::map<int, std::pair<std::string, std:
                 }
 
                 // Создаем новый поток для обработки клиента
-                client_threads.emplace_back([this, work_sock, &database, path_basefile, main_log]() { //Основа многопоточной обработки клиентов
-                    handle_client(work_sock, database, path_basefile, main_log);
+                client_threads.emplace_back([this, work_sock, path_basefile, main_log]() { //Основа многопоточной обработки клиентов
+                    handle_client(work_sock, path_basefile, main_log);
                     
                     // Уменьшаем счетчик активных клиентов при завершении
                     {

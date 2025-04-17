@@ -11,8 +11,7 @@
 using namespace std;
 struct Communicator
 {
-    void handle_client(int work_sock, std::map<int, std::pair<std::string, std::string>>& database, 
-        const std::string& path_basefile, Logger* main_log);
+    void handle_client(int work_sock,const std::string& path_basefile, Logger* main_log);
     int connection(int port,std::map<int,std::pair<std::string,std::string>> database,std::string path_basefile,Logger* main_log);
     static std::string md5(std::string input_str);
     static std::string generate_salt();

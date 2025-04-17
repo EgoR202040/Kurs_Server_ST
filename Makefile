@@ -1,7 +1,7 @@
 .PHONY: all clean format
 
 CXX=g++
-CXXFLAGS=-O2  -DNDEBUG -std=c++14
+CXXFLAGS=-DNDEBUG -std=c++14
 LDFLAGS= -lboost_program_options -lcrypto++ -lstdc++fs -lpthread
 PROJECT = server_egorow
 SOURCES := $(wildcard *.cpp)
